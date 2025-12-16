@@ -5,9 +5,10 @@ RUN bun install
 COPY . .
 RUN bun run build
 
-FROM alpine:latest
+FROM alpine:3.19
 WORKDIR /app
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache nginx nodejs npm wget curl
 
 ENV NODE_ENV=production
