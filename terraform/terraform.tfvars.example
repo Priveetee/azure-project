@@ -1,0 +1,28 @@
+# =============================================================================
+# Terraform Variables Configuration
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to version control!
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# K3s Connection
+# -----------------------------------------------------------------------------
+# kubeconfig_path    = "~/.kube/config"
+# kubeconfig_context = "default"  # Your K3s context name
+
+# -----------------------------------------------------------------------------
+# Azure Container Registry
+# -----------------------------------------------------------------------------
+# acr_login_server = "myregistry.azurecr.io"
+# acr_username     = "myregistry"
+# acr_password     = "your-acr-password"  # Use TF_VAR_acr_password instead
+
+# -----------------------------------------------------------------------------
+# Application Settings
+# -----------------------------------------------------------------------------
+# app_name      = "azure-project"
+# app_namespace = "default"
+# image_tag     = "latest"
+# replicas      = 2
+# node_env      = "production"
