@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "types": ["expo"],
+    "baseUrl": ".",
+    "paths": {
+      "@meowww/shared": ["../../packages/shared/src"],
+      "@meowww/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}
