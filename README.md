@@ -64,20 +64,39 @@ docker push tpchatimages.azurecr.io/tp-chat:latest
 
 ```bash
 # View container app
-az containerapp show --name tp-chat --resource-group rg-tp-chat
+az containerapp show --name tp-chat-test --resource-group rg-tp-chat
 
 # View logs
-az containerapp logs show --name tp-chat --resource-group rg-tp-chat --follow
+az containerapp logs show --name tp-chat-test --resource-group rg-tp-chat --follow
 
 # Scale the app
-az containerapp update --name tp-chat --resource-group rg-tp-chat --min-replicas 2 --max-replicas 5
+az containerapp update --name tp-chat-test --resource-group rg-tp-chat --min-replicas 2 --max-replicas 5
 
 # Get app URL
-az containerapp show -n tp-chat -g rg-tp-chat --query properties.configuration.ingress.fqdn -o tsv
+az containerapp show -n tp-chat-test -g rg-tp-chat --query properties.configuration.ingress.fqdn -o tsv
 
 # Update image
-az containerapp update --name tp-chat --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>
+az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>
 ```
+
+### Configure ACR Registry (First-time setup)
+
+Before the Container App can pull images from private ACR, you must configure registry authentication:
+
+```bash
+# Get ACR credentials
+az acr credential show --name tpchatimages
+
+# Configure Container App with ACR registry
+az containerapp registry set \
+  --name tp-chat-test \
+  --resource-group rg-tp-chat \
+  --server tpchatimages.azurecr.io \
+  --username tpchatimages \
+  --password <ACR_PASSWORD>
+```
+
+> **Note**: This only needs to be done once per Container App. After configuration, the app can pull any image from the registry.
 
 ---
 
@@ -95,6 +114,29 @@ azure-project/
 
 ---
 
+## 🚀 CI/CD Pipeline
+
+### Workflow
+
+```mermaid
+graph LR
+    A[Push to CI/CD branch] --> B[CI: Build & Test]
+    C[PR to main] --> B
+    B -->|Success on main| D[CD: Build & Deploy to ACR]
+    D --> E[Container App Updated]
+```
+
+### Triggers
+
+| Workflow | Trigger | Condition |
+|----------|---------|----------|
+| **CI** (`ci.yml`) | Push to `CI/CD` branch | Always |
+| **CI** (`ci.yml`) | Pull Request to `main` | Always |
+| **CD** (`cd.yml`) | CI workflow completes | Only if CI succeeded on `main` |
+| **CD** (`cd.yml`) | Manual `workflow_dispatch` | Emergency deployments |
+
+---
+
 ## 📝 Quick Reference
 
 | Task | Command |
@@ -104,5 +146,5 @@ azure-project/
 | Build image | `docker compose build` |
 | Start app | `docker compose up -d` |
 | Push to ACR | `docker tag azure-project:latest tpchatimages.azurecr.io/tp-chat:latest && docker push tpchatimages.azurecr.io/tp-chat:latest` |
-| View container logs | `az containerapp logs show --name tp-chat --resource-group rg-tp-chat --follow` |
-| Update container app | `az containerapp update --name tp-chat --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>` |
+| View container logs | `az containerapp logs show --name tp-chat-test --resource-group rg-tp-chat --follow` |
+| Update container app | `az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>` |
