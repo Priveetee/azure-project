@@ -1,8 +1,8 @@
 # Azure Project - TP Chat
 
-A containerized application with CI/CD pipeline for Azure Container Registry (ACR) and Azure Container Apps deployment.
+Containerized application with CI/CD pipeline for Azure Container Registry (ACR) and Azure Container Apps deployment.
 
-## 🏗️ Architecture
+## Architecture
 
 - **Runtime**: Node.js on Alpine Linux
 - **Web Server**: Nginx
@@ -14,21 +14,21 @@ A containerized application with CI/CD pipeline for Azure Container Registry (AC
 
 ---
 
-## 🌐 Azure Infrastructure
+## Azure Infrastructure
 
 | Resource | Name | Region |
 |----------|------|--------|
-| **Resource Group** | `rg-tp-chat` | `francecentral` |
-| **Log Analytics Workspace** | `workspace-rgtpchatCfD0` | `francecentral` |
-| **Container Apps Environment** | `env-tp-chat` | `francecentral` |
-| **Container Registry (ACR)** | `tpchatimages.azurecr.io` | `francecentral` |
-| **Container App (test)** | `tp-chat-test` | `francecentral` |
+| Resource Group | `rg-tp-chat` | `francecentral` |
+| Log Analytics Workspace | `workspace-rgtpchatCfD0` | `francecentral` |
+| Container Apps Environment | `env-tp-chat` | `francecentral` |
+| Container Registry (ACR) | `tpchatimages.azurecr.io` | `francecentral` |
+| Container App (test) | `tp-chat-test` | `francecentral` |
 
-**Test App URL**: https://tp-chat-test.yellowsmoke-11c1ae9a.francecentral.azurecontainerapps.io/
+Test App URL: https://tp-chat-test.yellowsmoke-11c1ae9a.francecentral.azurecontainerapps.io/
 
 ---
 
-## 🐳 Docker Commands
+## Docker Commands
 
 ```bash
 # Build the image
@@ -53,17 +53,17 @@ docker compose up -d --build
 # Login to ACR
 az acr login --name tpchatimages
 
-# Tag and push (local image is azure-project from docker-compose)
+# Tag and push
 docker tag azure-project:latest tpchatimages.azurecr.io/tp-chat:latest
 docker push tpchatimages.azurecr.io/tp-chat:latest
 ```
 
 ---
 
-## 🏗️ Azure Container Apps Management
+## Azure Container Apps Management
 
 ```bash
-# View container app
+# View container app details
 az containerapp show --name tp-chat-test --resource-group rg-tp-chat
 
 # View logs
@@ -81,7 +81,7 @@ az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image t
 
 ### Configure ACR Registry (First-time setup)
 
-Before the Container App can pull images from private ACR, you must configure registry authentication:
+Before the Container App can pull images from private ACR, configure registry authentication:
 
 ```bash
 # Get ACR credentials
@@ -96,11 +96,11 @@ az containerapp registry set \
   --password <ACR_PASSWORD>
 ```
 
-> **Note**: This only needs to be done once per Container App. After configuration, the app can pull any image from the registry.
+This only needs to be done once per Container App.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 azure-project/
@@ -114,14 +114,14 @@ azure-project/
 
 ---
 
-## 🚀 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### Workflow
 
 ```mermaid
 graph LR
-    A[Push to CI/CD branch] --> B[CI: Build & Test]
-    C[PR to main] --> B
+    A[Push to any branch] --> B[CI: Build & Test]
+    C[Pull Request] --> B
     B -->|Success on main| D[CD: Build & Deploy to ACR]
     D --> E[Container App Updated]
 ```
@@ -129,15 +129,15 @@ graph LR
 ### Triggers
 
 | Workflow | Trigger | Condition |
-|----------|---------|----------|
-| **CI** (`ci.yml`) | Push to `CI/CD` branch | Always |
-| **CI** (`ci.yml`) | Pull Request to `main` | Always |
-| **CD** (`cd.yml`) | CI workflow completes | Only if CI succeeded on `main` |
-| **CD** (`cd.yml`) | Manual `workflow_dispatch` | Emergency deployments |
+|----------|---------|-----------|
+| CI (`ci.yml`) | Push to any branch | Always |
+| CI (`ci.yml`) | Pull Request | Always |
+| CD (`cd.yml`) | CI workflow completes | Only if CI succeeded on `main` |
+| CD (`cd.yml`) | Manual `workflow_dispatch` | Emergency deployments |
 
 ---
 
-## 📝 Quick Reference
+## Quick Reference
 
 | Task | Command |
 |------|---------|

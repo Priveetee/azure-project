@@ -1,15 +1,15 @@
 # shared
 
-To install dependencies:
+Shared utilities and common code for the project.
+
+## Setup
 
 ```bash
 bun install
 ```
 
-To run:
+## Usage
 
 ```bash
 bun run index.js
 ```
-
-This project was created using `bun init` in bun v1.3.2. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
