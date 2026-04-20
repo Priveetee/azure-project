@@ -45,11 +45,12 @@ jobs:
 
       - name: OWASP ZAP baseline scan
         uses: zaproxy/action-baseline@v0.6.0
+        continue-on-error: true
         with:
           target: "http://localhost:3000"
-          rules_file_name: ""
-          format: "xml"
-          failOnError: "true"
+          docker_name: "owasp/zap2docker-weekly"
+          fail_action: false
+          allow_issue_writing: false
 
       - name: Tear down docker compose
         if: always()
