@@ -1,0 +1,57 @@
+name: Security Scans
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  security:
+    name: Trivy & OWASP ZAP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build image (local tag)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Docker
+          push: false
+          load: true
+          tags: ghci-image:latest
+
+      - name: Run Trivy image scan (via Docker)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --format table ghci-image:latest
+
+      - name: Start app with docker compose
+        run: |
+          docker compose up -d
+
+      - name: Wait for app (port 3000)
+        run: |
+          for i in {1..12}; do
+            nc -z localhost 3000 && exit 0 || sleep 5
+          done
+          echo "app not ready" && exit 1
+
+      - name: OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.6.0
+        continue-on-error: true
+        with:
+          target: "http://localhost:3000"
+          docker_name: "owasp/zap2docker-weekly"
+          fail_action: false
+          allow_issue_writing: false
+
+      - name: Tear down docker compose
+        if: always()
+        run: docker compose down
