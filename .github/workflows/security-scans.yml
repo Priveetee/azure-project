@@ -3,7 +3,7 @@ name: Security Scans
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   security:
@@ -27,11 +27,9 @@ jobs:
           push: false
           tags: ghci-image:latest
 
-      - name: Run Trivy image scan
-        uses: aquasecurity/trivy-action@v1
-        with:
-          image-ref: ghci-image:latest
-          format: 'table'
+      - name: Run Trivy image scan (via Docker)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --format table ghci-image:latest
 
       - name: Start app with docker-compose
         run: |
@@ -47,10 +45,10 @@ jobs:
       - name: OWASP ZAP baseline scan
         uses: zaproxy/action-baseline@v0.6.0
         with:
-          target: 'http://localhost:3000'
-          rules_file_name: ''
-          format: 'xml'
-          failOnError: 'true'
+          target: "http://localhost:3000"
+          rules_file_name: ""
+          format: "xml"
+          failOnError: "true"
 
       - name: Tear down docker-compose
         if: always()
