@@ -1,4 +1,42 @@
-````markdown
+# Azure Project - TP Chat
+
+Containerized application with CI/CD pipeline for Azure Container Registry (ACR) and Azure Container Apps deployment.
+## Security & Observabilité
+
+- **CI scans**: workflow ajouté dans `.github/workflows/security-scans.yml` — Trivy (scan d'image) + OWASP ZAP (DAST) sur PRs/pushes.
+- **Scan local (Trivy)**:
+
+```bash
+# reconstruire l'image locale
+docker compose build
+docker build -t ghci-image:latest -f Docker .
+# lancer Trivy contre l'image
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 ghci-image:latest
+```
+
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw owasp/zap2docker-stable zap-baseline.py -t http://localhost:3000 -r zap_report.html
+```
+
+- **Observabilité**: `terraform/monitoring.tf` ajoute un `helm_release` pour `kube-prometheus-stack` (Prometheus + Grafana).
+- **Docs**: `SECURITY.md` et `docs/security.md` ajoutés (instructions et reproduction locale).
+
+---
+
+## Architecture
+
+- **Runtime**: Node.js on Alpine Linux
+- **Web Server**: Nginx
+- **Build Tool**: Bun
+- **Container Registry**: Azure Container Registry (ACR)
+- **CI/CD**: GitHub Actions
+- **Orchestration**: Azure Container Apps (Managed Kubernetes)
+- **Infrastructure**: Azure CLI
+
+---
+
+## Azure Infrastructure
+
 # Azure Project - TP Chat
 
 Containerized application with CI/CD pipeline for Azure Container Registry (ACR) and Azure Container Apps deployment.
@@ -155,4 +193,4 @@ graph LR
 | View container logs | `az containerapp logs show --name tp-chat-test --resource-group rg-tp-chat --follow` |
 | Update container app | `az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>` |
 
-````
+```
