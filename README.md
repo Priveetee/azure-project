@@ -1,6 +1,31 @@
+````markdown
 # Azure Project - TP Chat
 
 Containerized application with CI/CD pipeline for Azure Container Registry (ACR) and Azure Container Apps deployment.
+
+## Security & Observabilité
+
+- **CI scans**: workflow ajouté dans `.github/workflows/security-scans.yml` — Trivy (scan d'image) + OWASP ZAP (DAST) sur PRs/pushes.
+- **Scan local (Trivy)**:
+
+```bash
+# reconstruire l'image locale
+docker compose build
+docker build -t ghci-image:latest -f Docker .
+# lancer Trivy contre l'image
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 ghci-image:latest
+```
+
+- **DAST local (OWASP ZAP)**:
+
+```bash
+docker run --rm -v $(pwd):/zap/wrk/:rw owasp/zap2docker-stable zap-baseline.py -t http://localhost:3000 -r zap_report.html
+```
+
+- **Observabilité**: `terraform/monitoring.tf` ajoute un `helm_release` pour `kube-prometheus-stack` (Prometheus + Grafana).
+- **Docs**: `SECURITY.md` et `docs/security.md` ajoutés (instructions et reproduction locale).
+
+---
 
 ## Architecture
 
@@ -79,25 +104,6 @@ az containerapp show -n tp-chat-test -g rg-tp-chat --query properties.configurat
 az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>
 ```
 
-### Configure ACR Registry (First-time setup)
-
-Before the Container App can pull images from private ACR, configure registry authentication:
-
-```bash
-# Get ACR credentials
-az acr credential show --name tpchatimages
-
-# Configure Container App with ACR registry
-az containerapp registry set \
-  --name tp-chat-test \
-  --resource-group rg-tp-chat \
-  --server tpchatimages.azurecr.io \
-  --username tpchatimages \
-  --password <ACR_PASSWORD>
-```
-
-This only needs to be done once per Container App.
-
 ---
 
 ## Project Structure
@@ -148,3 +154,5 @@ graph LR
 | Push to ACR | `docker tag azure-project:latest tpchatimages.azurecr.io/tp-chat:latest && docker push tpchatimages.azurecr.io/tp-chat:latest` |
 | View container logs | `az containerapp logs show --name tp-chat-test --resource-group rg-tp-chat --follow` |
 | Update container app | `az containerapp update --name tp-chat-test --resource-group rg-tp-chat --image tpchatimages.azurecr.io/tp-chat:<tag>` |
+
+````
